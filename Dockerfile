@@ -22,10 +22,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2-dev \
     libzip-dev \
     zlib1g-dev \
+    libgd-dev \
     default-mysql-client \
     nginx \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
+    && docker-php-ext-enable gd \
+    && echo "extension=gd.so" > /usr/local/etc/php/conf.d/docker-php-ext-gd.ini \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
