@@ -38,14 +38,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY composer.json composer.lock* ./
-RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
 COPY package.json package-lock.json* ./
 RUN npm install --no-audit --no-fund
 
 COPY . .
 
-RUN npm run build \
+RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader \
+    && npm run build \
     && (php artisan config:cache || true) \
     && (php artisan route:cache || true) \
     && (php artisan view:cache || true) \
