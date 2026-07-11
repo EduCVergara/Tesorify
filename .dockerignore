@@ -21,7 +21,6 @@ Thumbs.db
 *.log
 tests/
 phpunit.xml
-docker/
 railway.toml
 README.md
 AGENTS.md
