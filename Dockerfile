@@ -45,20 +45,23 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
     rm -rf /var/lib/apt/lists/*
 
 COPY composer.json composer.lock* ./
-
 COPY package.json package-lock.json* ./
-RUN npm install --no-audit --no-fund
+
+# Install PHP dependencies first (without post-autoload-dump scripts which require artisan)
+RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader --no-scripts
 
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader \
-    && npm run build \
-    && (php artisan config:cache || true) \
-    && (php artisan route:cache || true) \
-    && (php artisan view:cache || true) \
-    && (php artisan storage:link || true) \
-    && chmod -R 775 storage bootstrap/cache \
-    && chown -R www-data:www-data /var/www/html
+# Now run composer scripts after copying all files including artisan
+RUN composer dump-autoload --no-dev --optimize && \
+    npm install --no-audit --no-fund && \
+    npm run build && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan storage:link || true && \
+    chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
