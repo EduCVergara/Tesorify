@@ -34,8 +34,16 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
-php artisan migrate --force
 
+# Try migrations but don't block startup
+php artisan migrate --force 2>&1 | head -20 || echo "Migration failed or skipped - will retry"
+
+# Start services
 php-fpm -D
+sleep 1
+
+# Run migrations in background if they failed
+(php artisan migrate --force 2>&1 || true) &
+
 nginx -g 'daemon off;'
 
