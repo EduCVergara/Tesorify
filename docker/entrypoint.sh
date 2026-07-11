@@ -1,6 +1,13 @@
 #!/bin/sh
 set -e
 
+# Use Railway's automatic MySQL variables if available
+export DB_HOST="${DB_HOST:-${MYSQL_HOST:-127.0.0.1}}"
+export DB_PORT="${DB_PORT:-${MYSQL_PORT:-3306}}"
+export DB_DATABASE="${DB_DATABASE:-${MYSQL_DATABASE:-tesorify}}"
+export DB_USERNAME="${DB_USERNAME:-${MYSQL_USER:-root}}"
+export DB_PASSWORD="${DB_PASSWORD:-${MYSQL_PASSWORD:-}}"
+
 # Create .env from environment variables if not present
 if [ ! -f /var/www/html/.env ]; then
     cat > /var/www/html/.env <<EOF
@@ -10,11 +17,11 @@ APP_KEY=${APP_KEY:-}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=${APP_URL:-http://localhost}
 DB_CONNECTION=${DB_CONNECTION:-mysql}
-DB_HOST=${DB_HOST:-127.0.0.1}
-DB_PORT=${DB_PORT:-3306}
-DB_DATABASE=${DB_DATABASE:-tesorify}
-DB_USERNAME=${DB_USERNAME:-root}
-DB_PASSWORD=${DB_PASSWORD:-}
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_DATABASE=$DB_DATABASE
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
 SESSION_DRIVER=${SESSION_DRIVER:-database}
 CACHE_STORE=${CACHE_STORE:-database}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
