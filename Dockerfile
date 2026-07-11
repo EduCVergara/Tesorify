@@ -25,17 +25,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zlib1g-dev \
     libgd-dev \
     default-mysql-client \
-    nginx \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
-    && docker-php-ext-enable gd opcache \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    nginx
+
+# Install PHP extensions - separating this to ensure gd is available for composer
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
+    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache && \
+    docker-php-ext-enable gd opcache && \
+    pecl install redis && \
+    docker-php-ext-enable redis
+
+# Verify that gd extension is available
+RUN php -m | grep gd || (echo "GD extension failed to install" && exit 1)
+
+# Install composer and nodejs
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY composer.json composer.lock* ./
 
